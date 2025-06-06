@@ -1,0 +1,47 @@
+name: Build NordVPN Image
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  IMAGE_NAME: mm404/nordvpn-sidecar
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Detect build version
+      id: detect_version
+      run: echo "VERSION=$(grep "^ARG NORDVPN_VERSION" Dockerfile | cut -d'=' -f2)" >> $GITHUB_ENV
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Build multi-arch for validation
+      if: github.event_name == 'push'
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: |
+          ${{ env.IMAGE_NAME }}:latest
+          ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+        build-args: |
+          GIT_REVISION=${{ github.sha }}
+    - name: Build Changelog
+      id: build_changelog
+      uses: mikepenz/release-changelog-builder-action@v6.0.1
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ env.VERSION }}
+        name: Release ${{ env.VERSION }}
+        body: ${{ steps.build_changelog.outputs.changelog }}
+        draft: false
+        prerelease: false
+        token: ${{ secrets.GITHUB_TOKEN }}
