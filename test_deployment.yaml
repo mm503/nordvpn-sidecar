@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nordvpn-test
+  labels:
+    app: nordvpn-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nordvpn-test
+  template:
+    metadata:
+      labels:
+        app: nordvpn-test
+    spec:
+      initContainers:
+      - name: nordvpn-sidecar
+        restartPolicy: Always
+        image: mm404/nordvpn-sidecar:latest
+        env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: nordvpn-credentials
+              key: token
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "200m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+      containers:
+      - name: utils
+        image: mm404/utils:latest
+        command: ["sleep", "3600"]
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nordvpn-credentials
+type: Opaque
+data:
+  token: BASE64-encoded-API-token-here
