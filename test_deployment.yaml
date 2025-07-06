@@ -24,6 +24,12 @@ spec:
             secretKeyRef:
               name: nordvpn-credentials
               key: token
+        - name: ALLOW_SUBNETS
+          value: "10.42.0.0/16,10.43.0.0/16,192.168.4.0/24,192.168.5.0/24"
+        - name: NORDVPN_COUNTRY
+          value: United_States
+        - name: NORDVPN_CITY
+          value: Dallas
         securityContext:
           capabilities:
             add:
@@ -46,6 +52,143 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "200m"
+      - name: webserver
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: static-content
+          mountPath: /usr/share/nginx/html
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+      - name: static-content
+        configMap:
+          name: static-content
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        sendfile        on;
+        keepalive_timeout  65;
+
+        server {
+            listen       80;
+            server_name  localhost;
+
+            location / {
+                root   /usr/share/nginx/html;
+                index  index.html index.htm;
+            }
+
+            error_page   500 502 503 504  /50x.html;
+            location = /50x.html {
+                root   /usr/share/nginx/html;
+            }
+        }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: static-content
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NordVPN Test Service</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f4f4f4;
+            }
+            .container {
+                background-color: white;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            h1 {
+                color: #333;
+                text-align: center;
+            }
+            .status {
+                background-color: #e8f5e8;
+                border-left: 4px solid #4caf50;
+                padding: 10px;
+                margin: 20px 0;
+            }
+            .info {
+                background-color: #e3f2fd;
+                border-left: 4px solid #2196f3;
+                padding: 10px;
+                margin: 20px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>NordVPN Test Service</h1>
+            <div class="status">
+                <strong>Status:</strong> Service is running
+            </div>
+            <div class="info">
+                <strong>Service Info:</strong><br>
+                • Pod: nordvpn-test<br>
+                • Containers: nordvpn-sidecar, utils, webserver<br>
+                • Port: 80 (internal), 8080 (service)<br>
+                • Network: Protected by NordVPN
+            </div>
+            <p>This page is served from an nginx container running alongside NordVPN sidecar and utility containers in the same pod.</p>
+        </div>
+    </body>
+    </html>
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nordvpn-test-service
+  labels:
+    app: nordvpn-test
+spec:
+  type: ClusterIP
+  selector:
+    app: nordvpn-test
+  ports:
+  - port: 8080
+    targetPort: 80
+    protocol: TCP
+    name: http
 ---
 apiVersion: v1
 kind: Secret
@@ -53,4 +196,4 @@ metadata:
   name: nordvpn-credentials
 type: Opaque
 data:
-  token: BASE64-encoded-API-token-here
+  token: ZTlmMmFiNDlhZTE2N2UzM2FiYzFhOTI4NDE3NTczMThjNTAyMjI0ZDg2MmE3NTc4YWJlNDk5YmU0MjZkN2NkMw==
