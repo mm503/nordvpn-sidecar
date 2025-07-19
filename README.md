@@ -85,7 +85,7 @@ spec:
     securityContext:
       capabilities:
         add:
-        - NET_ADMIN
+        - NET_ADMIN         # Required for VPN to work
   containers:
   - name: main-container
     image: your-app:latest
