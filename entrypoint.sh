@@ -8,6 +8,7 @@ NORDVPN_KILLSWITCH="${NORDVPN_KILLSWITCH:-on}"
 # Global flags
 SHUTDOWN=false
 RECONNECT_COUNT=0
+STATUS_FILE=/ready
 
 do_fail() {
   echo "> Error: $1"
@@ -69,6 +70,24 @@ for i in {1..3}; do
     let SLEEP=$((SLEEP * 2))
 done
 
+# Configure DNS resolver if NORDVPN_DNS is set
+if [[ -n "$NORDVPN_DNS" ]]; then
+    echo "> Configuring custom DNS resolver"
+    IFS=',' read -r -a DNS <<< "${NORDVPN_DNS}"
+    for dns in "${DNS[@]}"; do
+        if ! nordvpn set dns "$dns"; then
+            do_fail "Failed to set DNS: $dns"
+        fi
+        echo " - Configured DNS: $dns"
+    done
+    echo "> Whitelisting port 53 for DNS"
+    if ! nordvpn allowlist add port 53; then
+        do_fail "Failed to whitelist port 53 for DNS"
+    else
+        echo " - Port 53 whitelisted successfully"
+    fi
+fi
+
 # Configure kill switch
 echo "> Configuring kill switch: ${NORDVPN_KILLSWITCH}"
 if ! nordvpn set killswitch "${NORDVPN_KILLSWITCH}"; then
@@ -107,6 +126,7 @@ connect_vpn() {
     echo "> Connecting to NordVPN: ${connect_cmd}"
     if eval "${connect_cmd}"; then
         echo " - Successfully connected to NordVPN. Status:"
+        touch "${STATUS_FILE}"
         nordvpn status
         RECONNECT_COUNT=0  # Reset counter on successful connection
         return 0
@@ -121,6 +141,7 @@ connect_vpn() {
             echo "> Fallback connection: ${fallback_cmd}"
             if eval "${fallback_cmd}"; then
                 echo " - Successfully connected to NordVPN (country fallback). Status:"
+                touch "${STATUS_FILE}"
                 nordvpn status
                 RECONNECT_COUNT=0
                 return 0
@@ -131,6 +152,7 @@ connect_vpn() {
         echo " - All specific connections failed. Connecting to any available server..."
         if nordvpn connect; then
             echo " - Successfully connected to any server. Status:"
+            touch "${STATUS_FILE}"
             nordvpn status
             RECONNECT_COUNT=0
             return 0
@@ -160,6 +182,7 @@ while [[ "$SHUTDOWN" == "false" ]]; do
 
   # Check connection status
   if ! nordvpn status | grep -q "Connected"; then
+    rm -f "${STATUS_FILE}"
     ((RECONNECT_COUNT++))
     echo "> Connection lost. Reconnect attempt ${RECONNECT_COUNT}/${MAX_RECONNECT_ATTEMPTS}..."
 
