@@ -6,8 +6,8 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [
-        "^Dockerfile$"
+      "managerFilePatterns": [
+        "/^Dockerfile$/"
       ],
       "matchStrings": [
         "# renovate: datasource=custom\\.nordvpn\\s+ARG NORDVPN_VERSION=(?<currentValue>[0-9.]+)"
