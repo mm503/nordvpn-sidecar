@@ -1,7 +1,7 @@
 FROM ubuntu:24.04
 
 # renovate: datasource=github-releases depName=mm503/nordvpn-versions
-ARG NORDVPN_VERSION=4.2.2
+ARG NORDVPN_VERSION=4.2.3
 ARG GIT_REVISION=unknown
 
 LABEL org.opencontainers.image.source="https://github.com/mm503/nordvpn-sidecar" \
