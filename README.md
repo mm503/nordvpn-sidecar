@@ -2,6 +2,13 @@
 
 A lightweight sidecar VPN solution for Kubernetes pods that redirects all pod traffic through NordVPN with optional split tunneling support.
 
+## Availability
+
+- Image name: [mm404/nordvpn-sidecar](https://hub.docker.com/r/mm404/nordvpn-sidecar)
+- Tags:
+  - `latest`
+  - `<version>` (eg. `4.2.3`)
+
 ## Features
 
 - **Full Traffic Redirection**: Routes all pod traffic through NordVPN
