@@ -23,9 +23,14 @@ jobs:
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
         if [ -n "$PR_NUMBER" ]; then
-          echo "IMAGE_TAGS=${IMAGE_NAME}:pr-${PR_NUMBER}" >> $GITHUB_ENV
+          echo "IMAGE_TAGS<<EOF" >> $GITHUB_ENV
+          echo "${IMAGE_NAME}:pr-${PR_NUMBER}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
         else
-          echo "IMAGE_TAGS=${IMAGE_NAME}:latest ${IMAGE_NAME}:${VERSION}" >> $GITHUB_ENV
+          echo "IMAGE_TAGS<<EOF" >> $GITHUB_ENV
+          echo "${IMAGE_NAME}:latest" >> $GITHUB_ENV
+          echo "${IMAGE_NAME}:${VERSION}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
         fi
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
