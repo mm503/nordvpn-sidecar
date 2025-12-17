@@ -17,6 +17,16 @@ jobs:
     - name: Detect build version
       id: detect_version
       run: echo "VERSION=$(grep "^ARG NORDVPN_VERSION" Dockerfile | cut -d'=' -f2)" >> $GITHUB_ENV
+    - name: Determine image tags
+      id: determine_tags
+      env:
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        if [ -n "$PR_NUMBER" ]; then
+          echo "IMAGE_TAGS=${IMAGE_NAME}:pr-${PR_NUMBER}" >> $GITHUB_ENV
+        else
+          echo "IMAGE_TAGS=${IMAGE_NAME}:latest ${IMAGE_NAME}:${VERSION}" >> $GITHUB_ENV
+        fi
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
     - name: Set up Docker Buildx
@@ -26,15 +36,13 @@ jobs:
       with:
         username: mm404
         password: ${{ secrets.DOCKER_HUB_KEY }}
-    - name: Build multi-arch for validation
-      if: github.event_name == 'push'
+    - name: Build multi-arch and push
       uses: docker/build-push-action@v5
       with:
         context: .
         platforms: linux/amd64,linux/arm64
-        push: ${{ github.event_name != 'pull_request' }}
+        push: true
         tags: |
-          ${{ env.IMAGE_NAME }}:latest
-          ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+          ${{ env.IMAGE_TAGS }}
         build-args: |
           GIT_REVISION=${{ github.sha }}
