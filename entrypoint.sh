@@ -169,7 +169,7 @@ else
     do_fail "Failed to establish initial connection to NordVPN."
 fi
 
-echo "> Monitoring connection (PID: $)"
+echo "> Monitoring connection (PID: $$)"
 echo "> Configuration: Country=${NORDVPN_COUNTRY}, City=${NORDVPN_CITY}, KillSwitch=${NORDVPN_KILLSWITCH}"
 echo "> Max reconnect attempts: ${MAX_RECONNECT_ATTEMPTS}, Interval: ${RECONNECT_INTERVAL}s"
 
