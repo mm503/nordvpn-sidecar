@@ -42,7 +42,7 @@ jobs:
         username: mm404
         password: ${{ secrets.DOCKER_HUB_KEY }}
     - name: Build multi-arch and push
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v7
       with:
         context: .
         platforms: linux/amd64,linux/arm64
