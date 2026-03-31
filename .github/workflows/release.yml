@@ -42,7 +42,7 @@ jobs:
         tags: |
           type=raw,value=${{ steps.version.outputs.version }}
           type=raw,value=latest
-          type=sha,format=short
+          type=raw,value=${{ steps.version.outputs.version }}-{{sha}}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v7
