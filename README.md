@@ -48,6 +48,7 @@ A lightweight sidecar VPN solution for Kubernetes pods that redirects all pod tr
 | `NORDVPN_COUNTRY` | unset | Target country (e.g., `United_States`) |
 | `NORDVPN_CITY` | unset | Target city (e.g., `Dallas`) |
 | `ALLOW_SUBNETS` | unset | Comma-separated subnets for split tunneling |
+| `NORDVPN_DNS` | unset | Comma-separated custom DNS servers (also allowlists port 53) |
 
 ## Implementation
 
@@ -82,9 +83,9 @@ spec:
           name: nordvpn-credentials
           key: token
     - name: ALLOW_SUBNETS   # Kubernetes networking, LAN
-      value: "10.42.0.0/16,10.43.0.0/16,192.168.q.0/24"
+      value: "10.42.0.0/16,10.43.0.0/16,192.168.1.0/24"
     - name: NORDVPN_COUNTRY
-      value: United_States  # Run "nordvpn contries" to see all options
+      value: United_States  # Run "nordvpn countries" to see all options
     - name: NORDVPN_CITY    # Run "nordvpn cities United_States" to see city options for US
       value: Miami
     - name: MAX_RECONNECT_ATTEMPTS
@@ -163,7 +164,7 @@ Docker images are built and published automatically via GitHub Actions:
    - `mm404/nordvpn-sidecar:latest`
    - `mm404/nordvpn-sidecar:{version}`
 
-**On Pull Requests:**
-- Multi-arch images are built for validation only (not pushed to Docker Hub)
+**On Push to Non-Main Branches:**
+- Multi-arch images are built and pushed to Docker Hub with tag `dev-{version}-{branch}-{sha}`
 
 The version is automatically extracted from the `NORDVPN_VERSION` argument in the Dockerfile and embedded in the image via the `GIT_REVISION` build argument.
