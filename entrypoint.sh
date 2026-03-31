@@ -64,7 +64,7 @@ for i in {1..3}; do
         echo " - Login successful"
         break
     fi
-    [[ $i -eq 3 ]] && { do_fail "Login failed after 3 attempts"; }
+    [[ $i -eq 3 ]] && { echo "> Login failed after 3 attempts. Exiting."; exit 1; }
     echo " - Login attempt $i failed, retrying in ${SLEEP}s..."
     sleep $SLEEP
     let SLEEP=$((SLEEP * 2))
