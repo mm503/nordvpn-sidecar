@@ -67,10 +67,9 @@ jobs:
         else
           UPSTREAM_NOTES=$(gh release view "${VERSION}" --repo NordSecurity/nordvpn-linux --json body --jq '.body' 2>/dev/null || echo "")
           {
-            echo "NordVPN ${VERSION}"
             echo ""
             if [ -n "$UPSTREAM_NOTES" ]; then
-              echo "## Upstream Release Notes"
+              echo "## NordVPN ${VERSION} Release Notes (from upstream)"
               echo ""
               echo "$UPSTREAM_NOTES"
             else
