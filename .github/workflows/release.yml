@@ -65,8 +65,20 @@ jobs:
         if gh release view "v${VERSION}" &>/dev/null; then
           echo "Release v${VERSION} already exists, skipping."
         else
+          UPSTREAM_NOTES=$(gh release view "${VERSION}" --repo NordSecurity/nordvpn-linux --json body --jq '.body' 2>/dev/null || echo "")
+          {
+            echo "NordVPN ${VERSION}"
+            echo ""
+            if [ -n "$UPSTREAM_NOTES" ]; then
+              echo "## Upstream Release Notes"
+              echo ""
+              echo "$UPSTREAM_NOTES"
+            else
+              echo "Official NordVPN Linux Releases: <https://github.com/NordSecurity/nordvpn-linux/releases>"
+            fi
+          } > /tmp/release_notes.md
           gh release create "v${VERSION}" \
             --title "v${VERSION}" \
-            --notes "NordVPN ${VERSION}" \
+            --notes-file /tmp/release_notes.md \
             --latest
         fi
