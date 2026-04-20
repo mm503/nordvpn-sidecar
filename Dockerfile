@@ -1,6 +1,6 @@
 FROM ubuntu:24.04
 
-# renovate: datasource=github-releases depName=mm503/nordvpn-versions
+# renovate: datasource=github-releases depName=NordSecurity/nordvpn-linux
 ARG NORDVPN_VERSION=4.5.0
 ARG GIT_REVISION=unknown
 
