@@ -60,7 +60,7 @@ sleep 2
 echo "> Logging in to NordVPN"
 SLEEP=2
 for i in {1..3}; do
-    if nordvpn login --token "${TOKEN}"; then
+    if yes n | nordvpn login --token "${TOKEN}"; then
         echo " - Login successful"
         break
     fi
