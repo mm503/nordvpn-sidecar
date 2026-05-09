@@ -55,7 +55,12 @@ if ! /etc/init.d/nordvpn start; then
 fi
 
 # Wait for daemon to be ready
-sleep 2
+echo "> Waiting for NordVPN daemon to be ready..."
+while ! nordvpn status &>/dev/null; do
+    echo -n "."
+    sleep 1
+done
+echo " Ready!"
 
 echo "> Logging in to NordVPN"
 SLEEP=2
