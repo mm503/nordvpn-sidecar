@@ -62,6 +62,11 @@ while ! nordvpn status &>/dev/null; do
 done
 echo " Ready!"
 
+echo "> Disabling NordVPN Analytics"
+if ! nordvpn set analytics off; then
+  do_fail "Failed to disable NordVPN Analytics."
+fi
+
 echo "> Logging in to NordVPN"
 SLEEP=2
 for i in {1..3}; do
