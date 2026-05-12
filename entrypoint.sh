@@ -55,7 +55,17 @@ if ! /etc/init.d/nordvpn start; then
 fi
 
 # Wait for daemon to be ready
-sleep 2
+echo "> Waiting for NordVPN daemon to be ready..."
+while ! nordvpn status &>/dev/null; do
+    echo -n "."
+    sleep 1
+done
+echo " Ready!"
+
+echo "> Disabling NordVPN Analytics"
+if ! nordvpn set analytics off; then
+  do_fail "Failed to disable NordVPN Analytics."
+fi
 
 echo "> Logging in to NordVPN"
 SLEEP=2
