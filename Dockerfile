@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 # renovate: datasource=github-releases depName=NordSecurity/nordvpn-linux
 ARG NORDVPN_VERSION=4.6.0
