@@ -19,7 +19,7 @@ A lightweight sidecar VPN solution for Kubernetes pods that redirects all pod tr
 
 ## Container Details
 
-- **Base Image**: Ubuntu 24.04 LTS
+- **Base Image**: Ubuntu 26.04 LTS
 - **Architecture Support**: Multi-arch (linux/amd64, linux/arm64)
 - **Components**: Ubuntu + NordVPN packages only
 - **Customization**: Single entrypoint.sh script
