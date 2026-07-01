@@ -1,7 +1,7 @@
 FROM ubuntu:26.04
 
 # renovate: datasource=github-releases depName=NordSecurity/nordvpn-linux
-ARG NORDVPN_VERSION=5.1.0
+ARG NORDVPN_VERSION=5.2.0
 ARG GIT_REVISION=unknown
 
 LABEL org.opencontainers.image.source="https://github.com/mm503/nordvpn-sidecar" \
