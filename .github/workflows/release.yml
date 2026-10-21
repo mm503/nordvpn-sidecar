@@ -6,9 +6,11 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 env:
   IMAGE_NAME: mm404/nordvpn-sidecar
+  GHCR_IMAGE: ghcr.io/mm503/nordvpn-sidecar
 
 jobs:
   release:
@@ -34,11 +36,20 @@ jobs:
         username: mm404
         password: ${{ secrets.DOCKER_HUB_KEY }}
 
+    - name: Log in to GHCR
+      uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Extract metadata
       id: meta
       uses: docker/metadata-action@v6
       with:
-        images: ${{ env.IMAGE_NAME }}
+        images: |
+          ${{ env.IMAGE_NAME }}
+          ${{ env.GHCR_IMAGE }}
         tags: |
           type=raw,value=${{ steps.version.outputs.version }}
           type=raw,value=latest
