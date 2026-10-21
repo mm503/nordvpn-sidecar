@@ -4,7 +4,9 @@ A lightweight sidecar VPN solution for Kubernetes pods that redirects all pod tr
 
 ## Availability
 
-- Image name: [mm404/nordvpn-sidecar](https://hub.docker.com/r/mm404/nordvpn-sidecar)
+- Image name:
+  - Docker Hub: [mm404/nordvpn-sidecar](https://hub.docker.com/r/mm404/nordvpn-sidecar)
+  - GHCR: [ghcr.io/mm503/nordvpn-sidecar](https://github.com/mm503/nordvpn-sidecar/pkgs/container/nordvpn-sidecar)
 - Tags:
   - `latest`
   - `<version>` (eg. `4.2.3`)
@@ -152,6 +154,7 @@ This project uses the NordVPN client version as its release version. Image tags 
 
 - `latest`: Most recent stable release
 - `{version}`: NordVPN client version (e.g., `4.2.2`)
+- `{version}-{sha}`: Specific build of a version, pinned to a git commit
 
 ### Release Process
 
@@ -160,11 +163,12 @@ Docker images are built and published automatically via GitHub Actions:
 **On Push to Main:**
 1. `NORDVPN_VERSION` in Dockerfile is detected from the build
 2. Multi-arch Docker images are built for linux/amd64 and linux/arm64
-3. Images are pushed to Docker Hub with two tags:
-   - `mm404/nordvpn-sidecar:latest`
-   - `mm404/nordvpn-sidecar:{version}`
+3. Images are pushed to both Docker Hub and GHCR with tags:
+   - `mm404/nordvpn-sidecar:latest`, `ghcr.io/mm503/nordvpn-sidecar:latest`
+   - `mm404/nordvpn-sidecar:{version}`, `ghcr.io/mm503/nordvpn-sidecar:{version}`
+   - `{version}-{sha}` on both registries
 
 **On Push to Non-Main Branches:**
-- Multi-arch images are built and pushed to Docker Hub with tag `dev-{version}-{branch}-{sha}`
+- Multi-arch images are built and pushed to GHCR only (not Docker Hub) with tag `ghcr.io/mm503/nordvpn-sidecar:dev-{version}-{branch}-{sha}`
 
 The version is automatically extracted from the `NORDVPN_VERSION` argument in the Dockerfile and embedded in the image via the `GIT_REVISION` build argument.
