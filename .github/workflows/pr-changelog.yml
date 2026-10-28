@@ -1,0 +1,63 @@
+name: PR Changelog
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths: ["Dockerfile"]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+
+    - name: Detect versions
+      id: version
+      env:
+        BASE_REF: ${{ github.base_ref }}
+      run: |
+        echo "new=$(grep "^ARG NORDVPN_VERSION" Dockerfile | cut -d'=' -f2)" >> $GITHUB_OUTPUT
+        echo "old=$(git show "origin/${BASE_REF}:Dockerfile" | grep "^ARG NORDVPN_VERSION" | cut -d'=' -f2)" >> $GITHUB_OUTPUT
+
+    - name: Post changelog comment
+      if: steps.version.outputs.new != steps.version.outputs.old
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        OLD_VERSION: ${{ steps.version.outputs.old }}
+        NEW_VERSION: ${{ steps.version.outputs.new }}
+      run: |
+        MARKER="<!-- nordvpn-changelog -->"
+        UPSTREAM_NOTES=$(gh release view "${NEW_VERSION}" --repo NordSecurity/nordvpn-linux --json body --jq '.body' 2>/dev/null || echo "")
+        {
+          echo "$MARKER"
+          echo "## NordVPN ${NEW_VERSION} Release Notes (from upstream)"
+          echo ""
+          echo "Updating from \`${OLD_VERSION}\` to \`${NEW_VERSION}\`."
+          echo ""
+          if [ -n "$UPSTREAM_NOTES" ]; then
+            # GitHub comments are capped at 65536 characters
+            echo "${UPSTREAM_NOTES:0:60000}"
+          else
+            echo "No upstream release notes found for ${NEW_VERSION}."
+          fi
+          echo ""
+          echo "Full release: <https://github.com/NordSecurity/nordvpn-linux/releases/tag/${NEW_VERSION}>"
+        } > /tmp/changelog_comment.md
+
+        # Update the existing changelog comment if there is one, so new pushes don't add duplicates
+        COMMENT_ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" --paginate \
+          --jq ".[] | select(.body | startswith(\"${MARKER}\")) | .id" | head -n1)
+        if [ -n "$COMMENT_ID" ]; then
+          gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" -F body=@/tmp/changelog_comment.md
+        else
+          gh pr comment "$PR_NUMBER" --body-file /tmp/changelog_comment.md
+        fi
